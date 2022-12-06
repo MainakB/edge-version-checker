@@ -47,6 +47,7 @@
     "@typescript-eslint/no-use-before-define": ["error"],
 
     "@typescript-eslint/no-useless-constructor": ["off"],
+    "no-promise-executor-return": "off",
     "@typescript-eslint/no-shadow": ["error"]
   }
 }

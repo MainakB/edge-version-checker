@@ -1,39 +1,25 @@
-import childProcess from "child_process";
-import { launch } from "chromium-edge-launcher";
-import http from "http";
+import childProcess from 'child_process';
+import {launch} from 'chromium-edge-launcher';
+import http from 'http';
 
-export interface HTTPRequest {
-  url: string;
-  requestType: string;
-  isJson?: boolean;
-  payload?: string | object;
-  headers?: object;
-}
-
-const runShellCommand = async (command: any) => {
-  return new Promise(function (resolve, reject) {
-    childProcess.exec(
-      command,
-      (err: any, commandOutput: any, commandError: any) => {
-        const errorThrown = err || commandError;
-        if (errorThrown) {
-          reject(errorThrown);
-          return;
-        }
-        resolve(commandOutput);
+const runShellCommand = async (command: any) => new Promise((resolve, reject) => {
+    childProcess.exec(command, (err: any, commandOutput: any, commandError: any) => {
+      const errorThrown = err || commandError;
+      if (errorThrown) {
+        reject(errorThrown);
+        return;
       }
-    );
+      resolve(commandOutput);
+    });
   });
-};
 
-const getRequestLocalEdgeVersion = (options: any) => {
-  return new Promise((resolve, reject) => {
+const getRequestLocalEdgeVersion = (options: any) => new Promise((resolve, reject) => {
     const request = http.get(options, (response: any) => {
-      let data = "";
-      response.on("data", (chunk: any) => {
+      let data = '';
+      response.on('data', (chunk: any) => {
         data += chunk;
       });
-      response.on("end", () => {
+      response.on('end', () => {
         if (response.statusCode === 200) {
           resolve(JSON.parse(data));
         } else {
@@ -45,40 +31,37 @@ const getRequestLocalEdgeVersion = (options: any) => {
       request.abort();
     });
 
-    request.on("error", reject);
+    request.on('error', reject);
   });
-};
 
 async function getInstalledChromiumEdgeVersion() {
-  const edgeFlags = ["--headless", "--disable-gpu"];
+  const edgeFlags = ['--headless', '--disable-gpu'];
   const edgeInstance = await launch({
-    edgeFlags: edgeFlags,
+    edgeFlags,
   } as any);
 
   const options = {
-    host: "127.0.0.1",
+    host: '127.0.0.1',
     port: edgeInstance.port,
-    path: "/json/version",
-    requestType: "GET",
+    path: '/json/version',
+    requestType: 'GET',
   };
   const response: any = await getRequestLocalEdgeVersion(options);
   await edgeInstance.kill();
 
-  return response.Browser.split("/")[1];
+  return response.Browser.split('/')[1];
 }
 
 async function readVersion() {
-  let current_version: any;
+  let currentVersion: any;
   if (process.env.JENKINS_CI) {
-    current_version = await runShellCommand(
-      "echo $(google-chrome --version | awk '{print $3}')"
-    );
+    currentVersion = await runShellCommand("echo $(google-chrome --version | awk '{print $3}')");
   } else {
-    current_version = await getInstalledChromiumEdgeVersion();
+    currentVersion = await getInstalledChromiumEdgeVersion();
   }
 
-  console.log(`Installed MS Edge browser version is ${current_version}`);
-  return current_version;
+  console.log(`Installed MS Edge browser version is ${currentVersion}`);
+  return currentVersion;
 }
 
 export async function getChromiumEdgedriver() {
@@ -90,7 +73,7 @@ export async function getChromiumEdgedriver() {
       throw new Error(`Invalid edgedriver type of ${edgeDriverValue}`);
     }
   } catch (err) {
-    throw new Error("Error thrown in edgedriver auto selection: " + err);
+    throw new Error('Error thrown in edgedriver auto selection: ' + err);
   }
   return edgeDriverValue;
 }
