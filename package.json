@@ -6,6 +6,9 @@
   "files": [
     "dist/**/*"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "prepare": "npm run compile:all && husky install",
     "version": "git add -A src",
