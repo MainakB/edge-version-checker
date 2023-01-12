@@ -51,14 +51,6 @@ function canAccess(file: string | undefined): Boolean {
   }
 }
 
-function getLocalAppDataPath(appPath: string): string {
-  // eslint-disable-next-line no-useless-escape
-  const userRegExp = /\/mnt\/([a-z])\/Users\/([^\/:]+)\/AppData\//;
-  const results = userRegExp.exec(appPath) || [];
-
-  return `/mnt/${results[1]}/Users/${results[2]}/AppData/Local`;
-}
-
 function getWinEdgePath() {
   const installations: Array<string> = [];
   const suffixes = [
@@ -70,7 +62,7 @@ function getWinEdgePath() {
   const prefixes = [process.env.LOCALAPPDATA, process.env.PROGRAMFILES, process.env['PROGRAMFILES(X86)']].filter(
     Boolean
   ) as string[];
-  console.log('mhgjhfhmgv', prefixes);
+
   prefixes.forEach(prefix =>
     suffixes.forEach(suffix => {
       const edgePath = path.join(prefix, suffix);
@@ -82,15 +74,6 @@ function getWinEdgePath() {
   return installations[installations.length - 1];
 }
 
-function wsl() {
-  // Manually populate the environment variables assuming it's the default config
-  process.env.LOCALAPPDATA = getLocalAppDataPath(`${process.env.PATH}`);
-  process.env.PROGRAMFILES = '/mnt/c/Program Files';
-  process.env['PROGRAMFILES(X86)'] = '/mnt/c/Program Files (x86)';
-
-  return getWinEdgePath();
-}
-
 async function getInstalledChromiumEdgeVersion() {
   const edgeFlags = ['--headless', '--disable-gpu'];
 
@@ -99,7 +82,7 @@ async function getInstalledChromiumEdgeVersion() {
   };
 
   if (process.platform === 'win32') {
-    const edgePath = wsl();
+    const edgePath = getWinEdgePath();
     launchFlags = {...launchFlags, edgePath};
   }
   const edgeInstance = await launch({
